@@ -1,0 +1,10 @@
+name: Apigee Edge UI
+description: UI enhancements for Apigee Edge module.
+package: Apigee Edge
+
+dependencies:
+  - apigee_edge
+
+type: module
+core: 8.x
+php: "7.1"

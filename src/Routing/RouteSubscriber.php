@@ -24,8 +24,10 @@
 
 namespace Drupal\apigee_edge_ui\Routing;
 
+use Drupal\apigee_edge_ui\BetterAppListBuilder;
 use Drupal\Core\Routing\RouteSubscriberBase;
 use Symfony\Component\Routing\RouteCollection;
+
 /**
  * Listens to the dynamic route events.
  */
@@ -34,9 +36,11 @@ class RouteSubscriber extends RouteSubscriberBase {
    * {@inheritdoc}
    */
   public function alterRoutes(RouteCollection $collection) {
-    // Replace "some.route.name" below with the actual route you want to override.
     if ($route = $collection->get('entity.developer_app.collection_by_developer')) {
-      $route->setDefault('_controller', '\Drupal\apigee_edge_ui\BetterAppListBuilder::render');
+      $route->setDefault('_controller', BetterAppListBuilder::class . '::render');
+    }
+    elseif ($route = $collection->get('entity.developer_app.collection')) {
+      $route->setDefault('_controller', BetterAppListBuilder::class . '::render');
     }
   }
 }

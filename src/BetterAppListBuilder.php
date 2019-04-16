@@ -30,7 +30,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Template\Attribute;
 
-
 /**
  * Advanced list builder for developer apps.
  */
@@ -40,32 +39,17 @@ class BetterAppListBuilder extends DeveloperAppListBuilderForDeveloper {
    * {@inheritdoc}
    */
   public function render(): array {
-    $build['app_list'] = [
-      '#theme' => 'developer_app_list_for_developer',
-      '#header' => $this->buildHeader(),
-      '#apps' => [],
-      '#empty' => [
-        '#markup' => $this->t('Looks like you do not have any apps. Get started by adding one.'),
-      ],
-      '#cache' => [
-        'contexts' => $this->entityType->getListCacheContexts(),
-        'tags' => $this->entityType->getListCacheTags(),
-      ],
-      '#attributes' => [
-        'class' => [
-          'developer-app-list',
-        ],
-      ],
-    ];
+    $build = parent::render();
 
-    // Only add the pager if a limit is specified.
-    if ($this->limit) {
-      $build['pager'] = [
-        '#type' => 'pager',
-      ];
-    }
+    // Use custom template instead of table.
+    unset($build['table']['#type']);
+    $build['table']['#theme'] = 'developer_app_list_for_developer';
 
-    // Build the app rows.
+    // Add extra class for theming.
+    $build['table']['#attributes']['class'][] = 'developer-app-list';
+
+    // Build the app rows from scratch.
+    $build['table']['#apps'] = [];
     foreach ($this->load() as $entity) {
       $app_row = [
         'attributes' => new Attribute([
@@ -82,13 +66,12 @@ class BetterAppListBuilder extends DeveloperAppListBuilderForDeveloper {
       ];
 
       if ($warning_message = $this->getWarningText($entity)) {
-        $app_row['warning_message']['#markup'] = $warning_message;
+        $app_row['warning_message'] = $warning_message;
       }
 
-      $build['app_list']['#apps'] += [$this->getCssIdForInfoRow($entity) => $app_row];
+      $build['table']['#apps'] += [$this->getCssIdForInfoRow($entity) => $app_row];
     }
 
-    $build['#attached']['library'][] = 'apigee_edge/apigee_edge.app_listing';
     $build['#attached']['library'][] = 'apigee_edge_ui/apigee_edge_ui.app_listing';
 
     return $build;
@@ -131,7 +114,7 @@ class BetterAppListBuilder extends DeveloperAppListBuilderForDeveloper {
       $operations['view'] = [
         'title' => $this->t('View'),
         'weight' => -150,
-        'url' => $entity->toLink()->getUrl(),
+        'url' => $entity->toUrl('canonical-by-developer'),
       ];
     }
 

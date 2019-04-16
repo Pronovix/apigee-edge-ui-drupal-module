@@ -1,9 +1,9 @@
 {
-    "name": "pronovix/apigee_edge_ui",
+    "name": "drupal/apigee_edge_ui",
     "type": "drupal-custom-module",
     "description": "UI enhancements for Apigee Edge",
     "minimum-stability": "dev",
     "require": {
-        "drupal/apigee_edge": "^1.0@beta"
+        "drupal/apigee_edge": "^1.0-rc2"
     }
 }

@@ -146,7 +146,8 @@ function apigee_edge_ui_form_alter(array &$form, FormStateInterface $form_state,
 
     // Add details wrapper to non-credential info fields.
     $form['details'] = [
-      '#type' => 'html_tag',
+      '#type' => 'fieldset',
+      '#title' => t('Details'),
       '#tag' => 'div',
       '#attributes' => [
         'class' => [

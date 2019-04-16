@@ -39,7 +39,7 @@ class BetterAppListBuilder extends DeveloperAppListBuilderForDeveloper {
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $build['app_list'] = [
       '#theme' => 'developer_app_list_for_developer',
       '#header' => $this->buildHeader(),

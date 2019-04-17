@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Apigee Edge UI module for Drupal.
  *
  * Copyright (C) 2019 PRONOVIX GROUP BVBA.
@@ -22,7 +23,6 @@
  */
 
 /**
- * @file
  * Main module file for Apigee Edge UI.
  */
 
@@ -131,7 +131,7 @@ function apigee_edge_ui_form_alter(array &$form, FormStateInterface $form_state,
     $form['#attributes']['class'][] = 'developer-app-form--add';
   }
   elseif (in_array($form_id, $app_edit_form_ids)) {
-    $app_label =  \Drupal::service('entity_type.manager')->getDefinition('developer_app')->getSingularLabel();
+    $app_label = \Drupal::service('entity_type.manager')->getDefinition('developer_app')->getSingularLabel();
     $form['actions']['submit']['#value'] = t('Save @app', ['@app' => $app_label]);
     $form['actions']['delete']['#title'] = t('Delete @app', ['@app' => $app_label]);
     $form['actions']['delete']['#weight'] = 1;
@@ -157,7 +157,7 @@ function apigee_edge_ui_form_alter(array &$form, FormStateInterface $form_state,
 
     foreach ($detail_fields as $field) {
       $form['details'][$field] = $form[$field];
-      unset($form[$field]);
+      $form[$field]['#access'] = FALSE;
     }
 
     if (isset($form['credential'])) {

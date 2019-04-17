@@ -1,6 +1,6 @@
 {
     "name": "drupal/apigee_edge_ui",
-    "type": "drupal-custom-module",
+    "type": "drupal-module",
     "description": "UI enhancements for Apigee Edge",
     "minimum-stability": "dev",
     "require": {

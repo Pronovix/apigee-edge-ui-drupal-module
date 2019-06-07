@@ -178,11 +178,12 @@ function apigee_edge_ui_form_alter(array &$form, FormStateInterface $form_state,
  * Implements template_preprocess_app_credential_product_list().
  */
 function apigee_edge_ui_preprocess_app_credential_product_list(array &$variables): void {
-  if (sizeof($variables['content']) <= 5) {
+  $num_of_visible_rows = 5;
+  if (sizeof($variables['content']) <= $num_of_visible_rows) {
     return;
   }
   $variables['#attached']['library'][] = 'apigee_edge_ui/apigee_edge_ui.app_credential_product_list';
-  $variables['num_of_visible_rows'] = 5;
+  $variables['num_of_visible_rows'] = $num_of_visible_rows;
   $variables['show_more_btn_attrs'] = new Attribute(['class' => []]);
   $variables['show_less_btn_attrs'] = new Attribute(['class' => []]);
 }

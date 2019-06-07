@@ -7,7 +7,7 @@ Drupal.behaviors.appCredentialProductList = {
       return;
     }
 
-    var hidden = 'app-credential-product-list--hidden';
+    var hidden = 'app-cred-prod-list--element-hidden';
     var hiddenList = document.getElementById('app-cred-prod-hidden-list');
     var showMore = document.getElementById('app-cred-prod-list-show-more');
     var showLess = document.getElementById('app-cred-prod-list-show-less');

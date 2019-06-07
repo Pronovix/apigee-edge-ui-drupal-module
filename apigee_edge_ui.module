@@ -182,25 +182,7 @@ function apigee_edge_ui_preprocess_app_credential_product_list(array &$variables
     return;
   }
   $variables['#attached']['library'][] = 'apigee_edge_ui/apigee_edge_ui.app_credential_product_list';
-  $variables['hidden_list'] = [];
-  $variables['hidden_list']['num_of_visible_rows'] = 5;
-  $variables['hidden_list']['attributes'] = new Attribute([
-    'id' => 'app-cred-prod-hidden-list',
-    'class' => ['app-credential-product-list--hidden'],
-  ]);
-  $variables['buttons'] = [];
-  $variables['buttons']['show_more'] = [
-    'text' => t('Show more'),
-    'attributes' => new Attribute([
-      'id' => 'app-cred-prod-list-show-more',
-      'class' => [],
-    ]),
-  ];
-  $variables['buttons']['show_less'] = [
-    'text' => t('Show less'),
-    'attributes' => new Attribute([
-      'id' => 'app-cred-prod-list-show-less',
-      'class' => ['app-credential-product-list--hidden'],
-    ]),
-  ];
+  $variables['num_of_visible_rows'] = 5;
+  $variables['show_more_btn_attrs'] = new Attribute(['class' => []]);
+  $variables['show_less_btn_attrs'] = new Attribute(['class' => []]);
 }

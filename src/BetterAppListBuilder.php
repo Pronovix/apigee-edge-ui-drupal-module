@@ -56,7 +56,11 @@ class BetterAppListBuilder extends DeveloperAppListBuilderForDeveloper {
           'id' => $this->getCssIdForInfoRow($entity),
           'class' => 'row--info',
         ]),
-        'name' => $entity->label(),
+        'name' => [
+          '#type' => 'link',
+          '#title' => $entity->label(),
+          '#url' => $entity->toUrl('canonical-by-developer'),
+        ],
         'status' => $this->renderAppStatus($entity),
         'operations' => $this->buildOperations($entity),
         'warning_attributes' => new Attribute([

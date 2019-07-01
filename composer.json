@@ -5,6 +5,6 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "drupal/apigee_edge": "^1.0-rc2"
+        "drupal/apigee_edge": "^1.0"
     }
 }

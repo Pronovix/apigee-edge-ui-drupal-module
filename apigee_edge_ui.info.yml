@@ -1,6 +1,6 @@
 name: Apigee Edge UI
 description: UI enhancements for Apigee Edge module.
-package: Apigee Edge
+package: Apigee
 
 dependencies:
   - apigee_edge:apigee_edge

@@ -5,21 +5,21 @@ declare(strict_types = 1);
 namespace Drupal\apigee_edge_ui;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\apigee_edge\Entity\ListBuilder\AppListBuilder;
+use Drupal\apigee_edge_teams\Entity\ListBuilder\TeamListBuilder;
 
 /**
  * Advanced list builder for developer apps.
  */
-class BetterAppListBuilder extends AppListBuilder {
+class BetterTeamListBuilder extends TeamListBuilder {
 
-  use BetterAppListTrait;
+  use BetterTeamListTrait;
 
   /**
    * {@inheritdoc}
    */
   public function render(): array {
     $build = parent::render();
-    $this->buildAppListContent($build);
+    $this->buildTeamListContent($build);
     return $build;
   }
 

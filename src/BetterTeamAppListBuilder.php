@@ -5,12 +5,12 @@ declare(strict_types = 1);
 namespace Drupal\apigee_edge_ui;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\apigee_edge\Entity\ListBuilder\AppListBuilder;
+use Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListBuilder;
 
 /**
  * Advanced list builder for developer apps.
  */
-class BetterAppListBuilder extends AppListBuilder {
+class BetterTeamAppListBuilder extends TeamAppListBuilder {
 
   use BetterAppListTrait;
 

@@ -54,7 +54,18 @@ trait BetterAppListTrait {
     else {
       $name = ['#markup' => $app->label()];
     }
-    $app_row = [
+    $app_row = [];
+    if ($app instanceof TeamAppInterface && $includeTeam) {
+      $team_storage = $this->entityTypeManager
+        ? $this->entityTypeManager->getStorage('team')
+        : \Drupal::entityTypeManager()->getStorage('team');
+      /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
+      $team = $team_storage->load($app->getAppOwner());
+      if ($team) {
+        $app_row += ['team' => $team->access('view') ? $team->toLink()->toRenderable() : $team->label()];
+      }
+    }
+    $app_row += [
       '#attributes' => new Attribute([
         'class' => 'row--info',
       ]),
@@ -68,16 +79,6 @@ trait BetterAppListTrait {
         'class' => 'row--warning',
       ]),
     ];
-    if ($app instanceof TeamAppInterface && $includeTeam) {
-      $team_storage = $this->entityTypeManager
-          ? $this->entityTypeManager->getStorage('team')
-          : \Drupal::entityTypeManager()->getStorage('team');
-      /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
-      $team = $team_storage->load($app->getAppOwner());
-      if ($team) {
-        $app_row = ['team' => $team->access('view') ? $team->toLink()->toRenderable() : $team->label()] + $app_row;
-      }
-    }
 
     return $app_row;
   }

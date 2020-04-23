@@ -25,13 +25,14 @@ namespace Drupal\apigee_edge_ui;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListByTeam;
 use Drupal\apigee_edge_teams\Entity\TeamInterface;
 
 /**
  * Advanced list builder for team apps by team.
  */
-class BetterTeamAppListByTeamBuilder extends TeamAppListByTeam {
+final class BetterTeamAppListByTeamBuilder extends TeamAppListByTeam {
 
   use BetterAppListTrait;
 
@@ -40,7 +41,27 @@ class BetterTeamAppListByTeamBuilder extends TeamAppListByTeam {
    */
   public function render(): array {
     $build = parent::render();
-    $this->buildAppListContent($build);
+    // Use custom template instead of table.
+    unset($build['table']['#type']);
+    $build['table']['#theme'] = 'apigee_edge_ui_list';
+    if (isset($this->entityTypeId)) {
+      $build['table']['#type'] = $this->entityTypeId;
+    }
+    $build['table']['#items'] = [];
+    foreach ($this->load() as $entity) {
+      if (!($entity instanceof AppInterface)) {
+        return [];
+      }
+      $app_row = $this->buildAppRow($entity);
+      $app_row['operations'] = $this->buildOperations($entity);
+      if ($entity->getStatus() === AppInterface::STATUS_APPROVED) {
+        $warningText = $this->getWarningList($this->checkAppCredentialWarnings($entity));
+        if ($warningText) {
+          $app_row['warning_message'] = $warningText;
+        }
+      }
+      $build['table']['#items'][] = $app_row;
+    }
     return $build;
   }
 
@@ -48,7 +69,11 @@ class BetterTeamAppListByTeamBuilder extends TeamAppListByTeam {
    * {@inheritdoc}
    */
   protected function getDefaultOperations(EntityInterface $entity): array {
-    return $this->getBetterOperations($entity);
+    $operations = parent::getDefaultOperations($entity);
+    if ($operation = $this->getViewOperation($entity)) {
+      $operations += ['view' => $operation];
+    }
+    return $operations;
   }
 
   /**

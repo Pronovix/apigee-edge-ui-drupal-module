@@ -38,7 +38,7 @@
 {%
   set classes = [
     'entity-list',
-    type ? 'entity-list--' ~ type
+    type ? 'entity-list--' ~ type|replace({'_': '-'})
   ]
 %}
 <div {{ attributes.addClass(classes) }}>

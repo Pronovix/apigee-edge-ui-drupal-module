@@ -29,7 +29,7 @@ use Drupal\apigee_edge_teams\Entity\ListBuilder\TeamListBuilder;
 /**
  * Advanced list builder for teams.
  */
-class BetterTeamListBuilder extends TeamListBuilder {
+final class BetterTeamListBuilder extends TeamListBuilder {
 
   use BetterTeamListTrait;
 

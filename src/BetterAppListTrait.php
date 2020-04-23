@@ -24,9 +24,10 @@ namespace Drupal\apigee_edge_ui;
  */
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Template\Attribute;
+use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\AppInterface;
+use Drupal\apigee_edge_teams\Entity\TeamAppInterface;
 
 /**
  * List builder additions for apps.
@@ -34,107 +35,106 @@ use Drupal\apigee_edge\Entity\AppInterface;
 trait BetterAppListTrait {
 
   /**
-   * Alters the app info in the original list render array.
+   * Creates a row for an app.
    *
-   * @param array $build
-   *   The original render array.
+   * @param \Drupal\apigee_edge\Entity\AppInterface $app
+   *   The developer- or team app entity.
    * @param string $rel
    *   The app name's link relationship type, defaults to 'canonical'.
+   * @param bool $includeTeam
+   *   Whether the team link should be included or not.
+   *
+   * @return array
+   *   The app row's render array.
    */
-  private function buildAppListContent(array &$build, string $rel = 'canonical'): void {
-    // Use custom template instead of table.
-    unset($build['table']['#type']);
-    if (isset($this->entityTypeId)) {
-      $build['table']['#type'] = $this->entityTypeId;
+  private function buildAppRow(AppInterface &$app, string $rel = 'canonical', bool $includeTeam = FALSE): array {
+    if ($app->hasLinkTemplate($rel) && ($link = $app->toLink(NULL, $rel))->getUrl()->access()) {
+      $name = $link->toRenderable();
     }
-    $build['table']['#theme'] = 'apigee_edge_ui_list';
-
-    // Build the app rows from scratch.
-    $build['table']['#items'] = [];
-    foreach ($this->load() as $entity) {
-      /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
-      $app_row = [
-        '#attributes' => new Attribute([
-          'id' => $this->getCssIdForInfoRow($entity),
-          'class' => 'row--info',
-        ]),
-        'name' => [
-          '#type' => 'link',
-          '#title' => $entity->label(),
-          '#url' => $entity->toUrl($rel),
-        ],
-        'status' => $this->renderAppStatus($entity),
-        'operations' => $this->buildOperations($entity),
-        '#warning_attributes' => new Attribute([
-          'id' => $this->getCssIdForWarningRow($entity),
-          'class' => 'row--warning',
-        ]),
-      ];
-
-      if (isset($build['table']['#header']['team'])) {
-        /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface[] $teams */
-        $teams = $this->entityTypeManager->getStorage('team')->loadMultiple();
-        $app_row['team'] = $teams[$entity->getCompanyName()]->access('view')
-            ? $teams[$entity->getCompanyName()]->toLink()->toRenderable()
-            : $teams[$entity->getCompanyName()]->label();
-      }
-      if ($warning_message = $this->getWarningTextByApp($entity)) {
-        $app_row['warning_message'] = $warning_message;
-      }
-
-      $build['table']['#items'] += [$this->getCssIdForInfoRow($entity) => $app_row];
+    else {
+      $name = ['#markup' => $app->label()];
     }
+    $app_row = [
+      '#attributes' => new Attribute([
+        'class' => 'row--info',
+      ]),
+      'name' => $name,
+      'status' => [
+        '#type' => 'status_property',
+        '#value' => $app->getStatus(),
+        '#indicator_status' => $app->getStatus() === AppInterface::STATUS_APPROVED ? StatusPropertyElement::INDICATOR_STATUS_OK : StatusPropertyElement::INDICATOR_STATUS_ERROR,
+      ],
+      '#warning_attributes' => new Attribute([
+        'class' => 'row--warning',
+      ]),
+    ];
+    if ($app instanceof TeamAppInterface && $includeTeam) {
+      $team_storage = $this->entityTypeManager
+          ? $this->entityTypeManager->getStorage('team')
+          : \Drupal::entityTypeManager()->getStorage('team');
+      /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
+      $team = $team_storage->load($app->getAppOwner());
+      if ($team) {
+        $app_row = ['team' => $team->access('view') ? $team->toLink()->toRenderable() : $team->label()] + $app_row;
+      }
+    }
+
+    return $app_row;
   }
 
   /**
-   * Returns the warning text for an app.
+   * Returns the warning list for an app.
    *
-   * @param \Drupal\apigee_edge\Entity\AppInterface $app
-   *   The app entity.
+   * @param array $warnings
+   *   The warnings of the App.
    *
-   * @return \Drupal\Core\StringTranslation\TranslatableMarkup|null
-   *   The warning text.
+   * @return array|null
+   *   The render array of warnings.
    */
-  private function getWarningTextByApp(AppInterface $app): ?TranslatableMarkup {
+  private function getWarningList(array $warnings): ?array {
+    $items = [];
     // Display warning sign next to the status if the app's status is
     // approved, but:
     // - any credentials of the app is in revoked status
     // - any products of any credentials of the app is in revoked or
     //   pending status.
-    $warnings = $this->checkAppCredentialWarnings($app);
-    if ($app->getStatus() === AppInterface::STATUS_APPROVED && ($warnings['revokedCred'] || $warnings['revokedOrPendingCredProduct'])) {
+    if ($warnings['revokedCred'] || $warnings['revokedOrPendingCredProduct'] || $warnings['expiredCred']) {
       if ($warnings['revokedCred']) {
-        return $warnings['revokedCred'];
+        $items[] = $warnings['revokedCred'];
       }
       elseif ($warnings['revokedOrPendingCredProduct']) {
-        return $warnings['revokedOrPendingCredProduct'];
+        $items[] = $warnings['revokedOrPendingCredProduct'];
+      }
+      if ($warnings['expiredCred']) {
+        $items[] = $warnings['expiredCred'];
       }
     }
-
-    return NULL;
+    return !empty($items) ? [
+      '#theme' => 'item_list',
+      '#items' => $items,
+    ] : NULL;
   }
 
   /**
-   * Add 'View' link to operations.
+   * Creates link for the 'View' operation.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $app
+   * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The App entity.
    * @param string $rel
    *   The view link relationship type, defaults to 'canonical'.
    *
-   * @return array
-   *   The new operations array including the 'View' operation.
+   * @return null|array
+   *   The render array of 'View' operation.
    */
-  private function getBetterOperations(EntityInterface $app, string $rel = 'canonical'): array {
-    $operations = parent::getDefaultOperations($app);
-    if ($app->access('view')) {
-      $operations['view'] = [
-        'title' => $this->t('View'),
+  private function getViewOperation(EntityInterface $entity, string $rel = 'canonical'): ?array {
+    if ($entity->hasLinkTemplate($rel) && ($url = $entity->toUrl($rel))->access()) {
+      $operation = [
+        'title' => method_exists($this, 't') ? $this->t('View') : t('View'),
         'weight' => -150,
-        'url' => $app->toUrl($rel),
+        'url' => $url,
       ];
     }
-    return $operations;
+    return $operation ?? NULL;
   }
 
 }

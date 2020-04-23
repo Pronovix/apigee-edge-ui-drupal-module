@@ -8,7 +8,7 @@
 declare(strict_types = 1);
 
 /**
- * Copyright (C) 2020 PRONOVIX GROUP BVBA.
+ * Copyright (C) 2019 PRONOVIX GROUP BVBA.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,6 +31,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Template\Attribute;
 use Drupal\Core\Utility\TableSort;
+use Drupal\apigee_edge_ui\BetterAppListBuilder;
+use Drupal\apigee_edge_ui\BetterTeamAppListBuilder;
+use Drupal\apigee_edge_ui\BetterTeamListBuilder;
 
 /**
  * Implements hook_theme().
@@ -69,13 +72,13 @@ function apigee_edge_ui_theme(array $existing, string $type, string $theme, stri
 function apigee_edge_ui_entity_type_alter(array &$entity_types): void {
   /** @var $entity_types \Drupal\Core\Entity\EntityTypeInterface[] */
   if (isset($entity_types['developer_app'])) {
-    $entity_types['developer_app']->setListBuilderClass('Drupal\apigee_edge_ui\BetterAppListBuilder');
+    $entity_types['developer_app']->setListBuilderClass(BetterAppListBuilder::class);
   }
   if (isset($entity_types['team_app'])) {
-    $entity_types['team_app']->setListBuilderClass('Drupal\apigee_edge_ui\BetterTeamAppListBuilder');
+    $entity_types['team_app']->setListBuilderClass(BetterTeamAppListBuilder::class);
   }
   if (isset($entity_types['team'])) {
-    $entity_types['team']->setListBuilderClass('Drupal\apigee_edge_ui\BetterTeamListBuilder');
+    $entity_types['team']->setListBuilderClass(BetterTeamListBuilder::class);
   }
 }
 
@@ -151,8 +154,10 @@ function apigee_edge_ui_form_alter(array &$form, FormStateInterface $form_state,
       }
 
       if (isset($form['actions']['submit']) && empty($form['actions']['submit']['#value']->getArguments())) {
-        $action = $form['actions']['submit']['#value']->getUntranslatedString();
-        $form['actions']['submit']['#value'] = t('@action @entity', ['@action' => $action, '@entity' => $label]);
+        $form['actions']['submit']['#value'] = t('@action @entity', [
+          '@action' => $form['actions']['submit']['#value'],
+          '@entity' => $label,
+        ]);
       }
 
       if (isset($form['actions']['delete'])) {

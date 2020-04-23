@@ -24,12 +24,13 @@ namespace Drupal\apigee_edge_ui;
  */
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\apigee_edge\Entity\AppInterface;
 use Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListBuilder;
 
 /**
  * Advanced list builder for team apps.
  */
-class BetterTeamAppListBuilder extends TeamAppListBuilder {
+final class BetterTeamAppListBuilder extends TeamAppListBuilder {
 
   use BetterAppListTrait;
 
@@ -38,7 +39,27 @@ class BetterTeamAppListBuilder extends TeamAppListBuilder {
    */
   public function render(): array {
     $build = parent::render();
-    $this->buildAppListContent($build);
+    // Use custom template instead of table.
+    unset($build['table']['#type']);
+    $build['table']['#theme'] = 'apigee_edge_ui_list';
+    if (isset($this->entityTypeId)) {
+      $build['table']['#type'] = $this->entityTypeId;
+    }
+    $build['table']['#items'] = [];
+    foreach ($this->load() as $entity) {
+      if (!($entity instanceof AppInterface)) {
+        return [];
+      }
+      $app_row = $this->buildAppRow($entity, 'canonical', TRUE);
+      $app_row['operations'] = $this->buildOperations($entity);
+      if ($entity->getStatus() === AppInterface::STATUS_APPROVED) {
+        $warningText = $this->getWarningList($this->checkAppCredentialWarnings($entity));
+        if ($warningText) {
+          $app_row['warning_message'] = $warningText;
+        }
+      }
+      $build['table']['#items'][] = $app_row;
+    }
     return $build;
   }
 
@@ -46,7 +67,11 @@ class BetterTeamAppListBuilder extends TeamAppListBuilder {
    * {@inheritdoc}
    */
   protected function getDefaultOperations(EntityInterface $entity): array {
-    return $this->getBetterOperations($entity);
+    $operations = parent::getDefaultOperations($entity);
+    if ($operation = $this->getViewOperation($entity)) {
+      $operations += ['view' => $operation];
+    }
+    return $operations;
   }
 
 }

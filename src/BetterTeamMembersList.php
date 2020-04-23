@@ -76,7 +76,7 @@ class BetterTeamMembersList extends TeamMembersList {
    */
   public function overview(TeamInterface $team) {
     $build = parent::overview($team);
-    $this->buildMemberListContent($team, $build);
+    $this->buildMemberListContent($build);
 
     return $build;
   }
@@ -84,14 +84,10 @@ class BetterTeamMembersList extends TeamMembersList {
   /**
    * Alters the app info in the original list render array.
    *
-   * @param \Drupal\apigee_edge_teams\Entity\TeamInterface $team
-   *   The current team.
    * @param array $build
    *   The original render array.
-   * @param string $rel
-   *   The app name's link relationship type, defaults to 'canonical'.
    */
-  private function buildMemberListContent(TeamInterface $team, array &$build, string $rel = 'canonical'): void {
+  private function buildMemberListContent(array &$build): void {
     // Use custom template instead of table.
     unset($build['table']['#type']);
     $build['table']['#type'] = 'member';

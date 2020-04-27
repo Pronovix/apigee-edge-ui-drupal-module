@@ -24,6 +24,7 @@ namespace Drupal\apigee_edge_ui;
  */
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Template\Attribute;
 use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge\Entity\AppInterface;
@@ -33,6 +34,8 @@ use Drupal\apigee_edge_teams\Entity\TeamAppInterface;
  * List builder additions for apps.
  */
 trait BetterAppListTrait {
+
+  use StringTranslationTrait;
 
   /**
    * Creates a row for an app.
@@ -48,11 +51,12 @@ trait BetterAppListTrait {
    *   The app row's render array.
    */
   private function buildAppRow(AppInterface &$app, string $rel = 'canonical', bool $includeTeam = FALSE): array {
-    if ($app->hasLinkTemplate($rel) && ($link = $app->toLink(NULL, $rel))->getUrl()->access()) {
-      $name = $link->toRenderable();
-    }
-    else {
-      $name = ['#markup' => $app->label()];
+    $name = ['#markup' => $app->label()];
+    if ($app->hasLinkTemplate($rel)) {
+      $link = $app->toLink(NULL, $rel);
+      if ($link->getUrl()->access()) {
+        $name = $link->toRenderable();
+      }
     }
     $app_row = [];
     if ($app instanceof TeamAppInterface && $includeTeam) {
@@ -89,10 +93,10 @@ trait BetterAppListTrait {
    * @param array $warnings
    *   The warnings of the App.
    *
-   * @return array|null
+   * @return array
    *   The render array of warnings.
    */
-  private function getWarningList(array $warnings): ?array {
+  private function getWarningRenderArray(array $warnings): array {
     $items = [];
     // Display warning sign next to the status if the app's status is
     // approved, but:
@@ -110,10 +114,10 @@ trait BetterAppListTrait {
         $items[] = $warnings['expiredCred'];
       }
     }
-    return !empty($items) ? [
+    return [
       '#theme' => 'item_list',
       '#items' => $items,
-    ] : NULL;
+    ];
   }
 
   /**
@@ -128,12 +132,15 @@ trait BetterAppListTrait {
    *   The render array of 'View' operation.
    */
   private function getViewOperation(EntityInterface $entity, string $rel = 'canonical'): ?array {
-    if ($entity->hasLinkTemplate($rel) && ($url = $entity->toUrl($rel))->access()) {
-      $operation = [
-        'title' => method_exists($this, 't') ? $this->t('View') : t('View'),
-        'weight' => -150,
-        'url' => $url,
-      ];
+    if ($entity->hasLinkTemplate($rel)) {
+      $url = $entity->toUrl($rel);
+      if ($url->access()) {
+        $operation = [
+          'title' => $this->t('View'),
+          'weight' => -150,
+          'url' => $url,
+        ];
+      }
     }
     return $operation ?? NULL;
   }

@@ -47,15 +47,13 @@ final class BetterDeveloperAppListBuilderForDeveloper extends DeveloperAppListBu
     }
     $build['table']['#items'] = [];
     foreach ($this->load() as $entity) {
-      if (!($entity instanceof AppInterface)) {
-        return [];
-      }
+      /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
       $app_row = $this->buildAppRow($entity, 'canonical-by-developer');
       $app_row['operations'] = $this->buildOperations($entity);
       if ($entity->getStatus() === AppInterface::STATUS_APPROVED) {
-        $warningText = $this->getWarningList($this->checkAppCredentialWarnings($entity));
-        if ($warningText) {
-          $app_row['warning_message'] = $warningText;
+        $warnings = $this->getWarningRenderArray($this->checkAppCredentialWarnings($entity));
+        if (!empty($warnings['#items'])) {
+          $app_row['warning_message'] = $warnings;
         }
       }
       $build['table']['#items'][] = $app_row;
@@ -68,8 +66,9 @@ final class BetterDeveloperAppListBuilderForDeveloper extends DeveloperAppListBu
    */
   protected function getDefaultOperations(EntityInterface $entity): array {
     $operations = parent::getDefaultOperations($entity);
-    if ($operation = $this->getViewOperation($entity, 'canonical-by-developer')) {
-      $operations += ['view' => $operation];
+    $view_operation = $this->getViewOperation($entity, 'canonical-by-developer');
+    if ($view_operation) {
+      $operations += ['view' => $view_operation];
     }
     return $operations;
   }

@@ -24,21 +24,54 @@ namespace Drupal\apigee_edge_ui;
  */
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Template\Attribute;
+use Drupal\apigee_edge\Element\StatusPropertyElement;
 use Drupal\apigee_edge_teams\Entity\ListBuilder\TeamListBuilder;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
 
 /**
  * Advanced list builder for teams.
  */
 final class BetterTeamListBuilder extends TeamListBuilder {
 
-  use BetterTeamListTrait;
-
   /**
    * {@inheritdoc}
    */
   public function render(): array {
     $build = parent::render();
-    $this->buildTeamListContent($build);
+    // Use custom template instead of table.
+    unset($build['table']['#type']);
+    if (isset($this->entityTypeId)) {
+      $build['table']['#type'] = $this->entityTypeId;
+    }
+    $build['table']['#theme'] = 'apigee_edge_ui_list';
+
+    // Build the team rows from scratch.
+    $build['table']['#items'] = [];
+    foreach ($this->load() as $entity) {
+      /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $entity */
+      if ($entity->access('view')) {
+        $name = $entity->toLink()->toRenderable();
+      }
+      else {
+        $name = ['#markup' => $entity->label()];
+      }
+      $team_row = [
+        '#attributes' => new Attribute([
+          'class' => 'row--info',
+        ]),
+        'name' => $name,
+        'status' => [
+          '#type' => 'status_property',
+          '#value' => $entity->getStatus(),
+          '#indicator_status' => $entity->getStatus() === TeamInterface::STATUS_ACTIVE ? StatusPropertyElement::INDICATOR_STATUS_OK : StatusPropertyElement::INDICATOR_STATUS_ERROR,
+        ],
+        'operations' => $this->buildOperations($entity),
+      ];
+
+      $build['table']['#items'][] = $team_row;
+    }
+
     return $build;
   }
 
@@ -46,7 +79,15 @@ final class BetterTeamListBuilder extends TeamListBuilder {
    * {@inheritdoc}
    */
   protected function getDefaultOperations(EntityInterface $entity): array {
-    return $this->getBetterOperations($entity);
+    $operations = parent::getDefaultOperations($entity);
+    if ($entity->access('view')) {
+      $operations['view'] = [
+        'title' => $this->t('View'),
+        'weight' => -150,
+        'url' => $entity->toUrl(),
+      ];
+    }
+    return $operations;
   }
 
 }

@@ -38,14 +38,17 @@ class RouteSubscriber extends RouteSubscriberBase {
    * {@inheritdoc}
    */
   public function alterRoutes(RouteCollection $collection) {
-    if ($route = $collection->get('entity.developer_app.collection_by_developer')) {
+    $route = $collection->get('entity.developer_app.collection_by_developer');
+    if ($route) {
       $route->setDefault('_controller', BetterDeveloperAppListBuilderForDeveloper::class . '::render');
     }
-    if ($route = $collection->get('entity.team_app.collection_by_team')) {
+    $route = $collection->get('entity.team_app.collection_by_team');
+    if ($route) {
       $route->setDefault('_controller', BetterTeamAppListByTeamBuilder::class . '::render');
       $route->setDefault('_title_callback', BetterTeamAppListByTeamBuilder::class . '::pageTitle');
     }
-    if ($route = $collection->get('entity.team.members')) {
+    $route = $collection->get('entity.team.members');
+    if ($route) {
       $route->setDefault('_controller', BetterTeamMembersList::class . '::overview');
       $route->setDefault('_title_callback', BetterTeamMembersList::class . '::pageTitle');
     }

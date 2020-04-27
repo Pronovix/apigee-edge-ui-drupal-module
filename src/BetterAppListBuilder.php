@@ -47,15 +47,13 @@ final class BetterAppListBuilder extends AppListBuilder {
     }
     $build['table']['#items'] = [];
     foreach ($this->load() as $entity) {
-      if (!($entity instanceof AppInterface)) {
-        return [];
-      }
+      /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
       $app_row = $this->buildAppRow($entity);
       $app_row['operations'] = $this->buildOperations($entity);
       if ($entity->getStatus() === AppInterface::STATUS_APPROVED) {
-        $warningText = $this->getWarningList($this->checkAppCredentialWarnings($entity));
-        if ($warningText) {
-          $app_row['warning_message'] = $warningText;
+        $warnings = $this->getWarningRenderArray($this->checkAppCredentialWarnings($entity));
+        if (!empty($warnings['#items'])) {
+          $app_row['warning_message'] = $warnings;
         }
       }
       $build['table']['#items'][] = $app_row;
@@ -68,8 +66,9 @@ final class BetterAppListBuilder extends AppListBuilder {
    */
   protected function getDefaultOperations(EntityInterface $entity): array {
     $operations = parent::getDefaultOperations($entity);
-    if ($operation = $this->getViewOperation($entity)) {
-      $operations += ['view' => $operation];
+    $view_operation = $this->getViewOperation($entity);
+    if ($view_operation) {
+      $operations += ['view' => $view_operation];
     }
     return $operations;
   }

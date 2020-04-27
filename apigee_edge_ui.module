@@ -183,15 +183,14 @@ function apigee_edge_ui_form_alter(array &$form, FormStateInterface $form_state,
         ];
 
         $detail_fields = [
+          'displayName',
           'callbackUrl',
           'description',
-          'displayName',
         ];
 
         foreach ($detail_fields as $field) {
           if (isset($form[$field])) {
-            $form['details'][$field] = $form[$field];
-            hide($form[$field]);
+            $form[$field]['#group'] = 'details';
           }
         }
       }

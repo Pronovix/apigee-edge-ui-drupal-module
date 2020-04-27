@@ -5,7 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\apigee_edge_ui;
 
 /**
- * Copyright (C) 2019 PRONOVIX GROUP BVBA.
+ * Copyright (C) 2020 PRONOVIX GROUP BVBA.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,13 +24,15 @@ namespace Drupal\apigee_edge_ui;
  */
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\apigee_edge\Entity\AppInterface;
-use Drupal\apigee_edge\Entity\ListBuilder\AppListBuilder;
+use Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListByTeam;
+use Drupal\apigee_edge_teams\Entity\TeamInterface;
 
 /**
- * Advanced list builder for developer apps.
+ * Advanced list builder for team apps by team.
  */
-final class BetterAppListBuilder extends AppListBuilder {
+final class BetterTeamAppListByTeamBuilder extends TeamAppListByTeam {
 
   use BetterAppListTrait;
 
@@ -71,6 +73,31 @@ final class BetterAppListBuilder extends AppListBuilder {
       $operations += ['view' => $view_operation];
     }
     return $operations;
+  }
+
+  /**
+   * Returns the title of the "team app list by team" page.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   The title of the page.
+   */
+  public function pageTitle(): TranslatableMarkup {
+    /** @var \Drupal\apigee_edge_teams\Entity\TeamInterface $team */
+    $team = $this->routeMatch->getParameter('team');
+
+    if ($team instanceof TeamInterface) {
+      $label = $this->entityTypeManager->getDefinition('team_app')
+        ->getPluralLabel();
+      $title = $this->t('@label of @team', [
+        '@label' => $label,
+        '@team' => $team->getName(),
+      ]);
+    }
+    else {
+      $title = parent::pageTitle();
+    }
+
+    return $title;
   }
 
 }

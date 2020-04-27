@@ -1,8 +1,8 @@
-apigee_edge_ui.app_listing:
+apigee_edge_ui.lists:
   version: 1.0
   css:
     theme:
-      css/apigee_edge_ui.app_listing.css: {}
+      css/apigee_edge_ui.lists.css: {}
 
 apigee_edge_ui.app_credential_product_list:
   css:

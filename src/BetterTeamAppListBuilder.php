@@ -5,7 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\apigee_edge_ui;
 
 /**
- * Copyright (C) 2019 PRONOVIX GROUP BVBA.
+ * Copyright (C) 2020 PRONOVIX GROUP BVBA.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,12 +25,12 @@ namespace Drupal\apigee_edge_ui;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\apigee_edge\Entity\AppInterface;
-use Drupal\apigee_edge\Entity\ListBuilder\AppListBuilder;
+use Drupal\apigee_edge_teams\Entity\ListBuilder\TeamAppListBuilder;
 
 /**
- * Advanced list builder for developer apps.
+ * Advanced list builder for team apps.
  */
-final class BetterAppListBuilder extends AppListBuilder {
+final class BetterTeamAppListBuilder extends TeamAppListBuilder {
 
   use BetterAppListTrait;
 
@@ -48,7 +48,7 @@ final class BetterAppListBuilder extends AppListBuilder {
     $build['table']['#items'] = [];
     foreach ($this->load() as $entity) {
       /** @var \Drupal\apigee_edge\Entity\AppInterface $entity */
-      $app_row = $this->buildAppRow($entity);
+      $app_row = $this->buildAppRow($entity, 'canonical', TRUE);
       $app_row['operations'] = $this->buildOperations($entity);
       if ($entity->getStatus() === AppInterface::STATUS_APPROVED) {
         $warnings = $this->getWarningRenderArray($this->checkAppCredentialWarnings($entity));
